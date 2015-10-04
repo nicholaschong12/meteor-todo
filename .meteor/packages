@@ -21,3 +21,4 @@ insecure                # Allow all DB writes from clients (for prototyping)
 iron:router
 ejson
 accounts-password
+themeteorchef:jquery-validation

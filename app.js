@@ -135,7 +135,7 @@ if(Meteor.isClient){
 	Template.login.events({
 		"submit form":function(e){
 			e.preventDefault();
-			var email = event.target.loginEmail.value;
+			/*var email = event.target.loginEmail.value;
 			var password = event.target.loginPassword.value;
 			Meteor.loginWithPassword(email,password,function(err){
 				if(err)alert(err.reason);
@@ -144,10 +144,48 @@ if(Meteor.isClient){
 					if(currentRoute == "login" ){Router.go("home");}
 					
 					}
-			});
+			});*/
 		}
 	});
 	
+	Template.login.onRendered(function(){
+		$(".login").validate({
+			submitHandler: function(event){
+				var email = $('[name=loginEmail]').val();
+				var password = $('[name=loginPassword]').val();
+				Meteor.loginWithPassword(email,password,function(err){
+				if(err)alert(err.reason);
+				else {
+					var currentRoute = Router.current().route.getName();
+					if(currentRoute == "login" ){Router.go("home");}
+					
+					}
+			});
+				
+			}
+		});
+	});
+	$.validator.setDefaults({
+			rules:{
+				email:{
+					required: true,
+					email: true	
+				},
+				password:{
+					required: true,
+					minlength: 6
+				},
+				messages:
+				{
+					email:{
+						required: "ENTER EMAIL ADDRESS"
+					},
+					password:{
+						required: "ENTER PASSWORD"
+					}
+				}
+			}
+	})
 	Template.navigation.events({
 		"click .logout":function(e){
 			e.preventDefault();
