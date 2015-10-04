@@ -4,7 +4,8 @@ if(Meteor.isClient){
 	Template.todos.helpers({
 		"todo":function(){
 			var currentList = this._id;
-			return Todos.find({listId: currentList} , {sort:{dateCreated: -1}});
+			var currentUser = Meteor.userId();
+			return Todos.find({listId: currentList , createdBy: currentUser} , {sort:{dateCreated: -1}});
 		}
 	});
 	
@@ -13,12 +14,14 @@ if(Meteor.isClient){
 			e.preventDefault();
 			var todoName = $("[name=todoName]");
 			var currentList = this._id;
+			var currentUser = Meteor.userId();
 			if(!!todoName.val()){
 				Todos.insert({
 					name: todoName.val(),
 					completed: false,
 					dateCreated: new Date(),
-					listId: currentList
+					listId: currentList,
+					createdBy: currentUser
 				});
 				todoName.val("");
 			}
@@ -91,9 +94,11 @@ if(Meteor.isClient){
 			
 			
 			var listName = $("[name=listName]");
+			var currentUser = Meteor.userId();
 			if(!!listName.val()){
 				Lists.insert({
-					name: listName.val()
+					name: listName.val(),
+					createdBy: currentUser
 				},function(err,res){
 					Router.go("listPage" , {_id: res});
 				});
@@ -104,9 +109,48 @@ if(Meteor.isClient){
 	
 	Template.lists.helpers({
 		"list":function(){
-			return Lists.find({},{sort:{name:1}});
+			var currentUser = Meteor.userId();
+			return Lists.find({createdBy:currentUser},{sort:{name:1}});
 		}
-	})
+	});
+	
+	Template.register.events({
+		"submit form":function(e){
+			e.preventDefault();
+			var email = event.target.registerEmail.value;
+			var password = event.target.registerPassword.value;
+			Accounts.createUser({
+				email:email,
+				password:password
+			},function(err){
+				if(err)alert(err.reason)
+				else Router.go("home");
+			});
+			
+			//event.target.registerEmail.value = "";
+			//event.target.registerPassword.value = "";
+		}
+	});
+	
+	Template.login.events({
+		"submit form":function(e){
+			e.preventDefault();
+			var email = event.target.loginEmail.value;
+			var password = event.target.loginPassword.value;
+			Meteor.loginWithPassword(email,password,function(err){
+				if(err)alert(err.reason);
+				else Router.go("home");
+			});
+		}
+	});
+	
+	Template.navigation.events({
+		"click .logout":function(e){
+			e.preventDefault();
+			Meteor.logout();
+			Router.go("login");
+		}
+	});
 }
 if(Meteor.isServer){
 	
