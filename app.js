@@ -3,7 +3,8 @@ Lists = new Meteor.Collection("lists");
 if(Meteor.isClient){
 	Template.todos.helpers({
 		"todo":function(){
-			return Todos.find({} , {sort:{dateCreated: -1}});
+			var currentList = this._id;
+			return Todos.find({listId: currentList} , {sort:{dateCreated: -1}});
 		}
 	});
 	
@@ -11,11 +12,13 @@ if(Meteor.isClient){
 		"submit form": function(e){
 			e.preventDefault();
 			var todoName = $("[name=todoName]");
+			var currentList = this._id;
 			if(!!todoName.val()){
 				Todos.insert({
 					name: todoName.val(),
 					completed: false,
-					dateCreated: new Date()
+					dateCreated: new Date(),
+					listId: currentList
 				});
 				todoName.val("");
 			}
@@ -73,10 +76,12 @@ if(Meteor.isClient){
 	});
 	Template.todosCount.helpers({
 		totalTodos:function(){
-			return Todos.find().count();
+			var currentList = this._id;
+			return Todos.find({listId: currentList}).count();
 		},
 		completedTodos:function(){
-			return Todos.find({completed: true}).count();
+			var currentList = this._id;
+			return Todos.find({listId:currentList , completed: true}).count();
 		}
 	});
 	
@@ -89,6 +94,8 @@ if(Meteor.isClient){
 			if(!!listName.val()){
 				Lists.insert({
 					name: listName.val()
+				},function(err,res){
+					Router.go("listPage" , {_id: res});
 				});
 				listName.val("");
 			}
@@ -118,6 +125,7 @@ Router.configure({
 	layoutTemplate:"main"
 })
 Router.route("/list/:_id",{
+	name: "listPage",
 	template: "listPage",
 	data: function(){
 		var currentList = this.params._id;
