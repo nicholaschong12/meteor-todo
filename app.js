@@ -1,4 +1,5 @@
 Todos = new Meteor.Collection("todos");
+Lists = new Meteor.Collection("lists");
 if(Meteor.isClient){
 	Template.todos.helpers({
 		"todo":function(){
@@ -78,8 +79,48 @@ if(Meteor.isClient){
 			return Todos.find({completed: true}).count();
 		}
 	});
+	
+	Template.addList.events({
+		"submit form":function(e){
+			e.preventDefault();
+			
+			
+			var listName = $("[name=listName]");
+			if(!!listName.val()){
+				Lists.insert({
+					name: listName.val()
+				});
+				listName.val("");
+			}
+		}
+	});
+	
+	Template.lists.helpers({
+		"list":function(){
+			return Lists.find({},{sort:{name:1}});
+		}
+	})
 }
 if(Meteor.isServer){
 	
 }
 
+
+Router.route('/register',{
+	name: "register"
+});
+Router.route('/login');
+Router.route("/",{
+	name: "home",
+	template: "home"
+});
+Router.configure({
+	layoutTemplate:"main"
+})
+Router.route("/list/:_id",{
+	template: "listPage",
+	data: function(){
+		var currentList = this.params._id;
+		return(Lists.findOne({_id:currentList}));
+	}
+});
