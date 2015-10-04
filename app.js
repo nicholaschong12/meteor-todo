@@ -139,7 +139,11 @@ if(Meteor.isClient){
 			var password = event.target.loginPassword.value;
 			Meteor.loginWithPassword(email,password,function(err){
 				if(err)alert(err.reason);
-				else Router.go("home");
+				else {
+					var currentRoute = Router.current().route.getName();
+					if(currentRoute == "login" ){Router.go("home");}
+					
+					}
 			});
 		}
 	});
@@ -173,6 +177,16 @@ Router.route("/list/:_id",{
 	template: "listPage",
 	data: function(){
 		var currentList = this.params._id;
-		return(Lists.findOne({_id:currentList}));
+		var currentUser = Meteor.userId();
+		return(Lists.findOne({_id:currentList , createdBy:currentUser}));
+	},
+	onBeforeAction:function(){
+		var currentUser = Meteor.userId();
+		if(currentUser){
+			this.next();
+		}
+		else{
+			this.render("login");
+		}
 	}
 });
